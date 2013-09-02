@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html ng-app="timer">
+<head>
+    <title></title>
+    <style>
+        @font-face {
+            font-family: displayFont;
+            src: url('Sansation_Light.ttf')
+        }
+        @-webkit-keyframes pulse {
+            from {  -webkit-box-shadow: 0 0 13px rgba(255,0,0, 1)  }
+            to {   -webkit-box-shadow: 0 0 13px rgba(255,0,0, 0)   }
+        }
+        .blink{
+            -webkit-animation-name: pulse;
+            -webkit-animation-duration: 1s;
+            -webkit-animation-iteration-count: 4;
+            -webkit-animation-timing-function: ease-in-out;
+            -webkit-animation-direction: alternate;
+        }
+
+        .button{
+            width: 60px; height: 60px; margin: 3px;
+            -webkit-border-radius: 10px;
+        }
+        .timer{ display: -webkit-box;  -webkit-box-pack: center;  }
+        .display{
+            font-size: 36px;
+            font-family: displayFont;
+            width: 200px;
+            display: -webkit-box;  -webkit-box-pack: center;
+        }
+        select{
+            display: block;
+            height: 30px;
+            line-height: 30px;
+            font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        }
+
+        .run{ background: -webkit-linear-gradient(top, #0a0 0%, #030 100%) }
+        .run.active{ background: -webkit-linear-gradient(top, #0e0 0%, #090 100%)  }
+        .run.resume{ background: -webkit-linear-gradient(top, #e90 0%, #900 100%)  }
+
+        .stop{ background: -webkit-linear-gradient(top, #c00 0%, #600 100%) }
+        .stop.active{ background: -webkit-linear-gradient(top, #e00 0%, #c00 100%) }
+
+        .presets{  background: -webkit-linear-gradient(top, #ccc 0%, #555 100%) }
+
+        .alarms{
+            position: absolute;
+            left: -500px;
+        }
+        #options{
+            position: absolute;
+            top: 750px;
+            height: 750px;
+        }
+        #jobForm{
+            width: 300px;
+        }
+        .presetDD{ display: -webkit-box; -webkit-box-align: center;}
+        .presetDD select{
+            margin-bottom: 0;
+            width: 125px;
+        }
+        #jobForm{
+            position: absolute;
+            padding: 20px;
+            background-color: #fff;
+            top:-300px;
+            left: 250px;
+            -webkit-box-shadow: 0 0 20px rgba(0,0,0, 0.5);
+            width: 350px;
+        }
+        legend{
+            font-size: 24px;
+        }
+        #contentForm>div{
+            /*width: 350px;*/
+            float: right;
+            padding-bottom: 10px;
+        }
+        #contentForm>div>input.ng-invalid.ng-dirty{
+            background-color: #F99;
+        }
+    </style>
+
+    <script src="lib/jquery-1.8-min.js"></script>
+    <!--<link rel="stylesheet" type="text/css" href="bootstrap.css">-->
+    <script src="../../../LIBS/main/angular.js"></script>
+    <script src="ng-app-2.js"></script>
+</head>
+
+<body ng-controller='TimerCtrl'>
+
+<div id="panel">
+    <div ng-repeat="timer in Timers[jName]" class="timer">
+        <div class="presetDD">
+            <select ng-model="currentJob" ng-options="job.label for job in jobs" ng-change="goToSelected(currentJob)" >
+                <!--ng-init="currentJob=jobs[1]"-->
+                    <option value=""> Jobs </option>
+            </select>
+        </div>
+
+        <div class="button presets" preset ng-click='showOptions()'></div>
+        <div class="button run" ng-class="{active: timer.mode=='running', paused: timer.mode=='paused'}" ng-click="run(timer)"></div>
+
+        <div>
+            <div class="display" ng-class="{blink: timer.blink}">
+                <div>{{timer.time | stringify}}</div>
+            </div>
+            <div class="display" style="font-size: 12px" ng-click="show_detailed()">
+                <div>Total:{{timer.total | stringify}}</div>
+                <div style="margin-left: 25px;">Runs:{{timer.numOfRuns}}</div>
+            </div>
+            <div class="display" style="font-size: 12px">
+            	<div>{{timer.jobDescr}}</div>
+            </div>
+        </div>
+
+        <div class="button stop" ng-class="{active: timer.mode=='paused'}" ng-click="stop(timer)"></div>
+
+        <div class="presetDD">
+            <div>
+                <select ng-model="timer.selectedGroup" ng-options="group.label for group in Tgroups" ng-change="getSelectedGroup(timer)">
+                    <option value=""> Group </option>
+                </select>
+                <select ng-model="timer.presetSelected" ng-options="time.label for time in Ttimes | filter:{group:timer.selectedGroup.data}" ng-change="getSelectedPreset(timer)">
+                    <option value=""> Preset </option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="button alarms" alarms>Alarms</div>
+
+<div id="jobForm">
+    <form name="jobForm" id="contentForm">
+        <legend>Job manager</legend><hr>
+        <div style="padding-top: 16px;">
+            <label for="title">Job Title</label>
+            <input type="text" name="title" ng-model="newJob.title" placeholder="Enter job name" required>
+        </div>
+        <div>
+            <label for="descr">Description</label>
+            <input type="text" name="descr" ng-model="newJob.descr" placeholder="Enter description">
+        </div>
+        <div style="padding-top: 10px;">
+            <button type="submit" ng-click='add(newJob)' ng-disabled={{disabled}}>Add job</button>
+            <button type="submit" ng-click="remove()">Remove job</button>
+            <button type="submit" ng-click="cancel()">Cancel</button>
+        </div>
+    </form>
+</div>
+
+<div ng-show="showInfo">
+    <table>
+        <tr ng-repeat="day in History">
+            <td>{{day.date}}</td>
+            <td>{{day.workSummary}}</td>
+            <td>{{day.restSummary}}</td>
+        </tr>
+
+    </table>
+</div>
+
+<div ng-controller='PlayerCtrl' ng-show='false'>
+    <audio ng-model='audio' controls></audio>
+</div>
+
+<!--<div class="options" optionsHandleBar></div>-->
+</body>
+</html>
