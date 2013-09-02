@@ -76,7 +76,6 @@
             font-size: 24px;
         }
         #contentForm>div{
-            /*width: 350px;*/
             float: right;
             padding-bottom: 10px;
         }
@@ -86,7 +85,6 @@
     </style>
 
     <script src="lib/jquery-1.8-min.js"></script>
-    <!--<link rel="stylesheet" type="text/css" href="bootstrap.css">-->
     <script src="../../../LIBS/main/angular.js"></script>
     <script src="ng-app-2.js"></script>
 </head>
@@ -97,7 +95,6 @@
     <div ng-repeat="timer in Timers[jName]" class="timer">
         <div class="presetDD">
             <select ng-model="currentJob" ng-options="job.label for job in jobs" ng-change="goToSelected(currentJob)" >
-                <!--ng-init="currentJob=jobs[1]"-->
                     <option value=""> Jobs </option>
             </select>
         </div>
